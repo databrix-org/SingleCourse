@@ -20,12 +20,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-b8_=kouorkc9!^)(fh)ibg8csop33xmtak7bvkkhz&y!rh)*v@'
+SECRET_KEY = 'nc00o1hsog1j=az)u_unt1yvn5s#*ukuyueih9y9o%m#rmr6&r'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org']
 
 
 # Application definition
@@ -37,6 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'shibboleth',
+    'course.apps.CourseConfig',
+    
 ]
 
 MIDDLEWARE = [
@@ -47,6 +50,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Shibboleth middleware
+    'shibboleth.middleware.ShibbolethRemoteUserMiddleware',
 ]
 
 ROOT_URLCONF = 'app.urls'
@@ -62,6 +67,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'shibboleth.context_processors.login_link',
+                'shibboleth.context_processors.logout_link',
             ],
         },
     },
@@ -121,3 +128,31 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Authentication backends
+AUTHENTICATION_BACKENDS = (
+    'shibboleth.backends.ShibbolethRemoteUserBackend',
+)
+
+# settings.py
+AUTH_USER_MODEL = 'course.CustomUserModel'
+
+SHIBBOLETH_ATTRIBUTE_MAP = {
+    "givenName": (True, "first_name"),
+    "sn": (True, "last_name"),
+    "mail": (True, "email"),
+}
+
+LOGIN_URL = 'https://1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org/Shibboleth.sso/Login'
+LOGOUT_URL = 'https://1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org/Shibboleth.sso/Logout'
+LOGIN_REDIRECT_URL = 'https://databrix.org'
+#SHIBBOLETH_GROUP_ATTRIBUTES = ['Shibboleth-affiliation', 'Shibboleth-isMemberOf']
+
+# Security Settings
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_SSL_REDIRECT = True
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
