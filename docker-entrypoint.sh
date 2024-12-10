@@ -1,18 +1,16 @@
 #!/bin/bash
 
-# Debug: Print current directory and contents
-echo "Current directory: $(pwd)"
-echo "Directory contents:"
-ls -la
+# Exit immediately if a command exits with a non-zero status
+set -e
 
 # Apply database migrations
 echo "Applying database migrations..."
-python manage.py migrate --noinput
+python /app/manage.py migrate
 
-# Collect static files
-echo "Collecting static files..."
-python manage.py collectstatic --noinput
+# Collect static files (if not done in Dockerfile)
+# echo "Collecting static files..."
+# python /app/manage.py collectstatic --noinput
 
-# Start Gunicorn
-echo "Starting Gunicorn..."
-exec gunicorn app.wsgi:application --bind 0.0.0.0:${PORT} 
+# Start Apache in the foreground
+echo "Starting Apache..."
+exec apache2ctl -D FOREGROUND 

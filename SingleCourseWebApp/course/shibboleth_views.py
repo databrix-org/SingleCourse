@@ -18,38 +18,6 @@ LOGOUT_URL = getattr(settings, 'LOGOUT_URL', '/logout/')
 LOGOUT_REDIRECT_URL = getattr(settings, 'LOGOUT_REDIRECT_URL', '/')
 LOGIN_URL = getattr(settings, 'LOGIN_URL', '/login/')
 
-class ShibbolethView(TemplateView):
-    """
-    This is here to offer a Shib protected page that we can
-    route users through to login.
-    """
-    template_name = 'course/user_info.html'
-
-    #@method_decorator(login_required)
-    def dispatch(self, request, *args, **kwargs):
-        """
-        Django docs say to decorate the dispatch method for 
-        class based views.
-        https://docs.djangoproject.com/en/dev/topics/auth/
-        """
-        return super(ShibbolethView, self).dispatch(request, *args, **kwargs)
-
-    def get(self, request, **kwargs):
-        """Process the request."""
-        next = self.request.GET.get('next', None)
-        if next is not None:
-            return redirect(next)
-        return super(ShibbolethView, self).get(request)
-
-    def get_context_data(self, **kwargs):
-        context = super(ShibbolethView, self).get_context_data(**kwargs)
-        context['user'] = self.request.user
-        # Add Shibboleth headers to context
-        context['shib_headers'] = {
-            k: v for k, v in self.request.META.items() 
-        }
-        return context
-
 
 class ShibbolethDebugView(TemplateView):
     template_name = 'course/auth_debug.html'
@@ -96,36 +64,31 @@ class ShibbolethDebugView(TemplateView):
 
 class ShibbolethLoginView(TemplateView):
     """
-    Pass the user to the Shibboleth login page with debug logging.
+    Handle Shibboleth login with better debugging
     """
     redirect_field_name = "target"
 
     def get(self, request, *args, **kwargs):
-        logger.info("Starting login process...")
-        
-        # Log current user state
-        logger.info("Current user state: authenticated=%s, user=%s", 
-                   request.user.is_authenticated,
-                   getattr(request.user, 'username', 'AnonymousUser'))
+        try:
+            logger.info("=== ShibbolethLoginView GET Request ===")
+            logger.info(f"Path: {request.path}")
+            logger.info(f"GET params: {request.GET}")
+            logger.info(f"Headers: {dict(request.headers)}")
+            logger.info(f"User authenticated: {request.user.is_authenticated}")
 
-        # Build the target URL
-        base_uri = request.build_absolute_uri('/').rstrip('/')
-        target = base_uri + '/course/home/'  # Redirect to debug view after login
-        
-        # Get login URL
-        login_endpoint = getattr(settings, 'LOGIN_URL', None)
-        logger.info("Login endpoint: %s", login_endpoint)
-        
-        if not login_endpoint:
-            error_msg = "LOGIN_URL not configured in settings"
-            logger.error(error_msg)
-            return HttpResponse(error_msg, status=500)
+            # Use the direct Shibboleth.sso handler
+            shibboleth_login_url = '/Shibboleth.sso/Login'
+            
+            # Add the target parameter to redirect to /course/home after login
+            target = request.build_absolute_uri('/course/home')
+            full_url = f'{shibboleth_login_url}?target={quote(target)}'
+            logger.info(f"Redirecting to: {full_url}")
+            
+            return redirect(full_url)
 
-        # Construct login URL with target
-        login_url = f'{login_endpoint}?target={quote(target)}'
-        logger.info("Redirecting to: %s", login_url)
-        
-        return redirect(login_url)
+        except Exception as e:
+            logger.exception("Error in ShibbolethLoginView")
+            return HttpResponse("Authentication error. Please contact support.", status=500)
 
 
 class ShibbolethLogoutView(TemplateView):

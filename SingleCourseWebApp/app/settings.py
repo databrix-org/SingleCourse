@@ -24,15 +24,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'nc00o1hsog1j=az)u_unt1yvn5s#*ukuyueih9y9o%m#rmr6&r'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org',
                   '127.0.0.1',
                   'localhost',
                   '193.196.55.219']
 
-
-# Application definition
+CSRF_TRUSTED_ORIGINS = [
+    'https://1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org',
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -52,10 +53,9 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'course.shib_middleware.CustomShibbolethMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # Shibboleth middleware
-    'course.shib_middleware.CustomShibbolethMiddleware',
 ]
 
 ROOT_URLCONF = 'app.urls'
@@ -130,24 +130,45 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Authentication backends
-AUTHENTICATION_BACKENDS = (
-    'shibboleth.backends.ShibbolethRemoteUserBackend',
+AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-)
+    'shibboleth.backends.ShibbolethRemoteUserBackend',
+]
 
 # settings.py
 AUTH_USER_MODEL = 'course.CustomUserModel'
 
 SHIBBOLETH_ATTRIBUTE_MAP = {
+    "HTTP_MAIL": (True, "email"),
     "HTTP_GIVENNAME": (True, "first_name"),
     "HTTP_SN": (True, "last_name"),
-    "HTTP_MAIL": (True, "email"),
+    "HTTP_UID": (True, "username"),
+    "HTTP_UNSCOPEDAFFILIATION": (False, "affiliation"),
 }
 
-LOGIN_URL = 'https://1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org/Shibboleth.sso/Login'
-LOGOUT_URL = 'https://1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org/Shibboleth.sso/Logout'
-LOGOUT_REDIRECT_URL = 'https://databrix.org'
-#SHIBBOLETH_GROUP_ATTRIBUTES = ['Shibboleth-affiliation', 'Shibboleth-isMemberOf']
+# Add this setting to specify which attributes are required
+SHIBBOLETH_REQUIRED_ATTRIBUTES = ['username', 'email', 'first_name', 'last_name']
+
+
+LOGIN_URL = '/Shibboleth.sso/Login'
+LOGIN_REDIRECT_URL = '/course/home/'
+LOGOUT_URL = '/Shibboleth.sso/Logout'
+LOGOUT_REDIRECT_URL = '/'
+SHIBBOLETH_FORCE_REAUTH_SESSION = False
+
+# Update these Shibboleth settings
+SHIBBOLETH_LOGIN_URL = '/Shibboleth.sso/Login' 
+SHIBBOLETH_LOGOUT_URL = '/Shibboleth.sso/Logout'
+
+# Example addition
+SHIBBOLETH_EXEMPT_PATHS = [
+    '/static/',  # Static files
+    '/admin/',   # Admin site
+    '/Shibboleth.sso/',
+    '/login/',
+    '/logout/',
+    # Add other paths as necessary
+]
 
 # Security Settings
 SECURE_HSTS_SECONDS = 31536000  # 1 year
@@ -182,6 +203,11 @@ LOGGING = {
     },
     'loggers': {
         'course.shibboleth_views': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'course.shib_middleware': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
@@ -230,3 +256,5 @@ STORAGES = {
         'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
     },
 }
+
+

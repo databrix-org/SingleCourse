@@ -1,8 +1,8 @@
 from django.urls import path
 from .shibboleth_views import (
-    ShibbolethDebugView,
     ShibbolethLoginView,
     ShibbolethLogoutView,
+    ShibbolethDebugView,
 )
 
 app_name = 'shibboleth'

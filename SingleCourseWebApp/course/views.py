@@ -42,6 +42,8 @@ def require_enrollment_and_group(view_func):
 @login_required
 def home(request):
     course = Course.objects.first()
+    if not course:
+        return render(request, 'course/course_not_published.html')
     is_enrolled = False
     user_group = None
     available_groups = []
@@ -56,10 +58,6 @@ def home(request):
                 .annotate(member_count=models.Count('members'))\
                 .filter(member_count__lt=course.max_members)\
                 .exclude(members=request.user)
-
-        # Allow instructors to see the course regardless of published state
-        if not course.is_published and not request.user.is_instructor:
-            return render(request, 'course/course_not_published.html')
     
     context = {
         'course': course,
