@@ -1,0 +1,322 @@
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'course/css/home.css' %}">
+
+<div class="course-details-container">
+
+    <div class="course-header">
+        <div class="header-content">
+            <h1>{{ course.title }}</h1>
+            <div class="provider-info">
+                <span>Dozent: {{ course.instructor.first_name }} {{ course.instructor.last_name }}</span>
+            </div>
+            <div class="course-actions">
+                {% if is_enrolled %}
+                    {% if course.max_members == 1 %}
+                        <a href="{% url 'course:course_overview' course.id %}" class="begin-project-btn">Start Course</a>
+                    {% else %}
+                        {% if user_group %}
+                            <a href="{% url 'course:course_overview' course.id %}" class="begin-project-btn">Start Course</a>
+                        {% else %}
+                            <button class="join-group-btn" onclick="openGroupPopup()">Join Group</button>
+                        {% endif %}
+                    {% endif %}
+                {% else %}
+                    <form action="{% url 'course:course_enroll' course.id %}" method="post" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="begin-project-btn enroll-btn">Enroll</button>
+                    </form>
+                {% endif %}
+                
+                {% if user.is_instructor %}
+                    <a href="{% url 'course:manage_course' %}" class="manage-course-btn">Manage Course</a>
+                {% endif %}
+                <!-- Add the logout form here -->
+                <a href="{% url 'shibboleth:logout' %}" class="manage-course-btn">Logout</a>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="course-tabs">
+        <button class="tab-button active" data-tab="info">Info</button>
+        <button class="tab-button" data-tab="modules">Module</button>
+        <button class="tab-button" data-tab="group">Group Info</button>
+        <button class="tab-button" data-tab="details">Projektdetails</button>
+    </div>
+
+    <!-- Add tab content sections -->
+    <div class="tab-content active" id="info">
+
+        <p>{{ course.description }}</p>
+    </div>
+
+    <div class="tab-content" id="modules">
+
+        {% if course.modules.all %}
+            <ul class="module-list">
+                {% for module in course.modules.all %}
+                    <li>{{ module.title }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No modules available yet.</p>
+        {% endif %}
+    </div>
+
+    <div class="tab-content" id="group">
+
+        {% if user_group %}
+            <h3>Your Group ID: {{ user_group.id }}</h3>
+            <p>Group Members:</p>
+            <ul>
+                {% for member in user_group.members.all %}
+                    <li>{{ member.first_name }} {{ member.last_name }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>You are not part of any group yet.</p>
+        {% endif %}
+    </div>
+
+    <div class="tab-content" id="details">
+
+        <p>Maximum Group Size: {{ course.max_members }}</p>
+        <p>Start Date: {{ course.start_date }}</p>
+        <p>End Date: {{ course.end_date }}</p>
+    </div>
+
+    <div id="groupPopup" class="group-popup">
+        <div class="popup-content">
+            <div class="popup-options">
+                
+                <div class="search-group">
+                    <input type="text" id="groupSearchInput" placeholder="Enter Group ID">
+                    <button class="search-group-btn" onclick="searchGroup()">Search</button>
+                </div>
+                <div class="existing-groups" id="searchResults">
+                    <!-- Search results will be displayed here -->
+                </div>
+                <button class="popup-btn create-group">Create Group</button>
+            </div>
+            <button onclick="closeGroupPopup()">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    console.log('Found tab buttons:', tabButtons.length);
+    console.log('Found tab contents:', tabContents.length);
+
+    // Set initial state - hide all except first tab
+    tabContents.forEach((content, index) => {
+        if (index === 0) {
+            content.style.display = 'block';
+        } else {
+            content.style.display = 'none';
+        }
+    });
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            console.log('Tab clicked:', button.getAttribute('data-tab'));
+            
+            // Hide all content first
+            tabContents.forEach(content => {
+                content.style.display = 'none';
+            });
+
+            // Remove active class from all buttons
+            tabButtons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected content and activate button
+            button.classList.add('active');
+            const tabId = button.getAttribute('data-tab');
+            const selectedContent = document.getElementById(tabId);
+            if (selectedContent) {
+                selectedContent.style.display = 'block';
+                console.log('Showing tab:', tabId);
+            } else {
+                console.error('Could not find tab content for:', tabId);
+            }
+        });
+    });
+
+    const createGroupBtn = document.querySelector('.popup-btn.create-group');
+    const joinGroupBtns = document.querySelectorAll('.join-existing-btn');
+
+    if (createGroupBtn) {
+        createGroupBtn.addEventListener('click', function() {
+            const url = `{% url 'course:create_group' course.id %}`;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    console.error('Failed to create group');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    }
+
+    if (joinGroupBtns) {
+        joinGroupBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const groupId = this.getAttribute('data-group-id');
+                const url = `{% url 'course:join_group' course.id %}`;
+
+                const formData = new FormData();
+                formData.append('group_id', groupId);
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        console.error('Failed to join group');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+    }
+});
+
+function openGroupPopup() {
+    const popup = document.getElementById('groupPopup');
+    const button = document.querySelector('.join-group-btn');
+    
+    if (!popup || !button) {
+        console.error('Popup or button not found');
+        return;
+    }
+    
+    const buttonRect = button.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+    const popupHeight = 200; // Approximate height of popup
+    
+    // Position popup below the button
+    let topPosition = buttonRect.bottom + window.scrollY;
+    
+    // Check if popup would go off screen bottom
+    if (buttonRect.bottom + popupHeight > windowHeight) {
+        // Position popup above the button instead
+        topPosition = buttonRect.top + window.scrollY - popupHeight;
+    }
+    
+    popup.style.top = `${topPosition}px`;
+    popup.style.left = `${buttonRect.left}px`;
+    popup.style.display = 'block';
+}
+
+function closeGroupPopup() {
+    const popup = document.getElementById('groupPopup');
+    if (popup) {
+        popup.style.display = 'none';
+    }
+}
+
+// Close popup when clicking outside
+document.addEventListener('click', function(event) {
+    const popup = document.getElementById('groupPopup');
+    const popupContent = popup.querySelector('.group-popup');
+    const button = document.querySelector('.join-group-btn');
+    
+    if (!popup || !button) return;
+    
+    if (event.target === popup && event.target !== popupContent && event.target !== button) {
+        closeGroupPopup();
+    }
+});
+
+function searchGroup() {
+    const groupId = document.getElementById('groupSearchInput').value;
+    const searchResults = document.getElementById('searchResults');
+    searchResults.innerHTML = ''; // Clear previous results
+
+    if (!groupId) {
+        searchResults.innerHTML = '<p>Please enter a Group ID.</p>';
+        return;
+    }
+
+    fetch(`/course/search-group/${groupId}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const group = data.group;
+                searchResults.innerHTML = `
+                    <div class="group-item">
+                        <h5>Group ${group.id}</h5>
+                        <p>Members (${group.members.length}/${group.max_members}):</p>
+                        <ul>
+                            ${group.members.map(member => `<li>${member.first_name} ${member.last_name}</li>`).join('')}
+                        </ul>
+                        <button class="join-existing-btn" data-group-id="${group.id}">Join Group</button>
+                    </div>
+                `;
+                attachJoinGroupEvent();
+            } else {
+                searchResults.innerHTML = '<p>No group found with this ID or group is full.</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            searchResults.innerHTML = '<p>Error searching for group.</p>';
+        });
+}
+
+function attachJoinGroupEvent() {
+    const joinGroupBtns = document.querySelectorAll('.join-existing-btn');
+    joinGroupBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const groupId = this.getAttribute('data-group-id');
+            const url = `{% url 'course:join_group' course.id %}`;
+
+            const formData = new FormData();
+            formData.append('group_id', groupId);
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    console.error('Failed to join group');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    });
+}
+</script>

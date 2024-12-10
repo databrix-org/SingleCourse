@@ -1,0 +1,261 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<div class="lesson-sidebar" id="lessonSidebar">
+    <div class="header-container">
+        <button id="toggleSidebar" class="toggle-btn">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        <a href="/course/1/" class="back-link">
+            <h2><i class="fas fa-stream"></i> Back to Overview</h2>
+        </a>
+    </div>
+
+    {% for module in modules_data %}
+        <div class="module-section">
+            <h3 class="module-header">
+                {{ module.module.title }}
+                <i class="fas fa-chevron-down module-toggle"></i>
+            </h3>
+            <ul class="module-content">
+                {% for lesson in module.lessons %}
+                    <li>
+                        <a href="{% url 'course:lesson_detail' lesson.lesson_id %}"
+                           {% if lesson.lesson_id == current_lesson_id %}class="active"{% endif %}>
+                            <span class="check-icon {% if not lesson.progress.is_completed %}uncompleted{% endif %}">
+                                {% if lesson.progress.is_completed %}
+                                    <i class="fas fa-check-circle"></i>
+                                {% else %}
+                                    <i class="far fa-circle"></i>
+                                {% endif %}
+                            </span>
+                            {{ lesson.lesson_title }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endfor %}
+
+</div>
+
+<style>
+.lesson-sidebar {
+    width: 350px;
+    transition: all 0.3s ease;
+    overflow-x: hidden;
+    position: fixed;
+    height: 100vh;
+    top: 0;
+    right: 0;
+    overflow-y: auto;
+    background-color: #ffffff;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.05);
+    border-left: 1px solid #e9ecef;
+    padding: 1rem;
+    border-left: 1px solid #ccc;
+}
+
+.lesson-sidebar.collapsed {
+    width: 0;
+    border-left: none;
+    box-shadow: none;
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.lesson-sidebar.collapsed .toggle-btn {
+    position: fixed;
+    right: 50px;
+    top: 50px;
+    width: 48px;
+    height: 48px;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.lesson-sidebar.collapsed .toggle-btn i {
+    transform: rotate(0deg);
+    font-size: 1.5em;
+    color: #dee2e6;
+}
+
+
+.lesson-sidebar.collapsed .module-section,
+.lesson-sidebar.collapsed h2,
+.lesson-sidebar.collapsed .course-title {
+    display: none;
+}
+
+.toggle-btn {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    cursor: pointer;
+    color: #6c757d;
+    transition: all 0.3s ease;
+    margin-right: 10px;
+}
+
+.toggle-btn:hover {
+    background-color: #e9ecef;
+    transform: scale(1.05);
+}
+
+.toggle-btn i {
+    transition: transform 0.3s ease;
+    font-size: 1.5em;
+    transform: rotate(0deg);
+}
+
+.lesson-sidebar.collapsed .toggle-btn i {
+    transform: rotate(180deg);
+    font-size: 1.5em;
+    color: #6c757d;
+}
+
+.lesson-sidebar ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.lesson-sidebar li {
+    margin-bottom: 0.5rem;
+}
+
+.lesson-sidebar a {
+    text-decoration: none;
+    color: #333;
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.lesson-sidebar a:hover {
+    background-color: #f8f9fa;
+    color: #007bff;
+}
+
+.lesson-sidebar a.active {
+    background-color: #e7f1ff;
+    color: #007bff;
+    font-weight: bold;
+}
+
+.back-link {
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    background-color: #ffffff;
+    border-radius: 4px;
+    flex-grow: 1;
+}
+
+.back-link:hover {
+    background-color: #e7f1ff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.back-link h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.back-link i {
+    font-size: 1.2rem;
+    color: #000000;
+    transition: transform 0.2s ease;
+}
+
+.back-link:hover i {
+    transform: scale(1.1);
+}
+
+.module-section {
+    padding: 0px 0px;
+}
+
+.module-section h3 {
+    color: #2c2d2e;
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+}
+
+.lesson-sidebar.collapsed .header-container {
+    justify-content: center;
+    padding: 10px 0;
+}
+
+.lesson-sidebar.collapsed .toggle-btn {
+    margin: 0;
+}
+
+.module-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.module-toggle {
+    transition: transform 0.3s ease;
+}
+
+.module-section.collapsed .module-toggle {
+    transform: rotate(-90deg);
+}
+
+.module-section.collapsed .module-content {
+    display: none;
+}
+
+.check-icon {
+    color: #469e49;
+    margin-right: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.check-icon.uncompleted {
+    color: #666;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('lessonSidebar');
+    const toggleBtn = document.getElementById('toggleSidebar');
+    
+    toggleBtn.addEventListener('click', function() {
+        sidebar.classList.toggle('collapsed');
+    });
+
+    // Add click handlers for module headers
+    const moduleHeaders = document.querySelectorAll('.module-header');
+    moduleHeaders.forEach(header => {
+        header.addEventListener('click', function(e) {
+            // Prevent event from bubbling up
+            e.stopPropagation();
+            const moduleSection = this.parentElement;
+            moduleSection.classList.toggle('collapsed');
+        });
+    });
+});
+</script> 

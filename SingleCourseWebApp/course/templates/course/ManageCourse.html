@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Course</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .course-title-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .create-course-columns {
+            display: flex;
+            gap: 20px;
+        }
+        .create-course-section {
+            flex: 1;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+
+        }
+        .actions-section {
+            display: flex;
+            gap: 10px;
+        }
+        .publish-btn {
+            margin-left: auto;
+        }
+        .section-content .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-content .card-body {
+            padding: 1rem;
+        }
+
+        .section-content .card-text.fs-5 {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .section-content .card-text.fw-medium.fs-6 {
+            color: #505965;
+            line-height: 1.6;
+            margin-bottom: 0;
+            background-color: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .section-content .btn-link {
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <div class="course-title-container">
+            <div class="title-section">
+                <h1>Course Setup</h1>
+            </div>
+            <div class="actions-section">
+                <button id="publish-btn" class="btn {% if course.is_published %}btn-secondary{% else %}btn-primary{% endif %} publish-btn">
+                    {% if course.is_published %}
+                        Unpublish
+                    {% else %}
+                        Publish
+                    {% endif %}
+                </button>
+            </div>
+        </div>
+
+        <div class="create-course-columns">
+            <!-- Course Details Section -->
+            <div class="create-course-section">
+                <div class="section-title">
+                    <h3>Course Details</h3>
+                </div>
+                <div class="section-content">
+                    <div class="card bg-light mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="card-text fw-medium fs-5">Title</div>
+                                <button class="btn btn-link p-0 text-dark text-decoration-none edit-btn" data-field="title">
+                                    <i class="bi bi-pencil"></i>
+                                    Edit
+                                </button>
+                            </div>
+                            <div class="content-display">
+                                <p class="card-text fw-medium fs-6">{{ course.title }}</p>
+                            </div>
+                            <div class="content-edit" style="display: none;">
+                                <input type="text" class="form-control" value="{{ course.title }}">
+                                <div class="mt-2">
+                                    <button class="btn btn-primary btn-sm save-btn">Save</button>
+                                    <button class="btn btn-secondary btn-sm cancel-btn">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card bg-light mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="card-text fw-medium fs-5">Description</div>
+                                <button class="btn btn-link p-0 text-dark text-decoration-none edit-btn" data-field="description">
+                                    <i class="bi bi-pencil"></i>
+                                    Edit
+                                </button>
+                            </div>
+                            <div class="content-display">
+                                <p class="card-text fw-medium fs-6">{{ course.description }}</p>
+                            </div>
+                            <div class="content-edit" style="display: none;">
+                                <textarea class="form-control" rows="3">{{ course.description }}</textarea>
+                                <div class="mt-2">
+                                    <button class="btn btn-primary btn-sm save-btn">Save</button>
+                                    <button class="btn btn-secondary btn-sm cancel-btn">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card bg-light mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="card-text fw-medium fs-5">Difficulty Level</div>
+                                <button class="btn btn-link p-0 text-dark text-decoration-none edit-btn" data-field="difficulty_level">
+                                    <i class="bi bi-pencil"></i>
+                                    Edit
+                                </button>
+                            </div>
+                            <div class="content-display">
+                                <p class="card-text fw-medium fs-6">
+                                    {% if course.difficulty_level == 1 %}
+                                        Beginner
+                                    {% elif course.difficulty_level == 2 %}
+                                        Intermediate
+                                    {% elif course.difficulty_level == 3 %}
+                                        Advanced
+                                    {% else %}
+                                        Professional
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="content-edit" style="display: none;">
+                                <select class="form-control">
+                                    <option value="1" {% if course.difficulty_level == 1 %}selected{% endif %}>Beginner</option>
+                                    <option value="2" {% if course.difficulty_level == 2 %}selected{% endif %}>Intermediate</option>
+                                    <option value="3" {% if course.difficulty_level == 3 %}selected{% endif %}>Advanced</option>
+                                    <option value="4" {% if course.difficulty_level == 4 %}selected{% endif %}>Professional</option>
+                                </select>
+                                <div class="mt-2">
+                                    <button class="btn btn-primary btn-sm save-btn">Save</button>
+                                    <button class="btn btn-secondary btn-sm cancel-btn">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card bg-light mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="card-text fw-medium fs-5">Maximal Members</div>
+                                <button class="btn btn-link p-0 text-dark text-decoration-none edit-btn" data-field="max_members">
+                                    <i class="bi bi-pencil"></i>
+                                    Edit
+                                </button>
+                            </div>
+                            <div class="content-display">
+                                <p class="card-text fw-medium fs-6">{{ course.max_members }}</p>
+                            </div>
+                            <div class="content-edit" style="display: none;">
+                                <input type="number" class="form-control" value="{{ course.max_members }}" min="1">
+                                <div class="mt-2">
+                                    <button class="btn btn-primary btn-sm save-btn">Save</button>
+                                    <button class="btn btn-secondary btn-sm cancel-btn">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Add more course details as needed -->
+                </div>
+            </div>
+
+            <!-- Include Course Modules Section -->
+            {% include 'course/ManageCourse_Modules.html' %}
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+    document.querySelectorAll('.edit-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const card = this.closest('.card-body');
+            const field = this.dataset.field;
+            const displayDiv = card.querySelector('.content-display');
+            const editDiv = card.querySelector('.content-edit');
+            
+            displayDiv.style.display = 'none';
+            editDiv.style.display = 'block';
+        });
+    });
+
+    document.querySelectorAll('.cancel-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const card = this.closest('.card-body');
+            const displayDiv = card.querySelector('.content-display');
+            const editDiv = card.querySelector('.content-edit');
+            
+            displayDiv.style.display = 'block';
+            editDiv.style.display = 'none';
+        });
+    });
+
+    document.querySelectorAll('.save-btn').forEach(button => {
+        button.addEventListener('click', async function() {
+            const card = this.closest('.card-body');
+            const field = card.querySelector('.edit-btn').dataset.field;
+            const input = card.querySelector('input, textarea, select');
+            const displayText = card.querySelector('.card-text.fw-medium.fs-6');
+            
+            try {
+                const response = await fetch('/course/manage/update_overview/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        field: field,
+                        value: input.value
+                    })
+                });
+                
+                if (response.ok) {
+                    if (field === 'difficulty_level') {
+                        const selectedOption = input.options[input.selectedIndex];
+                        displayText.textContent = selectedOption.text;
+                    } else {
+                        displayText.textContent = input.value;
+                    }
+                    card.querySelector('.content-display').style.display = 'block';
+                    card.querySelector('.content-edit').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error updating course:', error);
+            }
+        });
+    });
+
+    document.getElementById('publish-btn').addEventListener('click', async function() {
+        const isPublished = this.textContent.trim() === 'Unpublish';
+        const action = isPublished ? 'unpublish' : 'publish';
+        
+        if (confirm(`Are you sure you want to ${action} this course?`)) {
+            try {
+                const response = await fetch('/course/manage/toggle_publish/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    this.textContent = data.is_published ? 'Unpublish' : 'Publish';
+                    this.className = data.is_published ? 'btn btn-secondary publish-btn' : 'btn btn-primary publish-btn';
+                }
+            } catch (error) {
+                console.error('Error toggling publish state:', error);
+            }
+        }
+    });
+
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    </script>
+</body>
+</html>

@@ -68,28 +68,43 @@ class Course(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    end_date = models.DateField(null=True, blank=True, help_text="Course end date")
     difficulty_level = models.IntegerField(
         choices=DIFFICULTY_CHOICES,
         default=1,
         help_text="Course difficulty level"
     )
+    max_members = models.PositiveIntegerField(
+        default=1,
+        help_text="Maximum number of students allowed in a group (for group exercises)",
+    )
     is_published = models.BooleanField(default=False)
-    # Additional fields
+
+    class Meta:
+        verbose_name = _("Course")
+        verbose_name_plural = _("Courses")
+
+    def save(self, *args, **kwargs):
+        if Course.objects.exists() and not self.pk:
+            raise ValidationError('Only one course instance is allowed')
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
 
 # Enrollment Model
 class Enrollment(models.Model):
-    student = models.ForeignKey(
-        CustomUserModel, on_delete=models.CASCADE, related_name='enrollments',
+    student = models.OneToOneField(
+        CustomUserModel, on_delete=models.CASCADE, related_name='enrollment',
     )
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')
     enrolled_at = models.DateTimeField(auto_now_add=True)
     progress = models.FloatField(default=0.0)
 
-    class Meta:
-        unique_together = ('student', 'course')
+    def save(self, *args, **kwargs):
+        if not self.course_id and Course.objects.exists():
+            self.course = Course.objects.first()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.student.first_name} enrolled in {self.course.title}"
@@ -128,7 +143,7 @@ class Lesson(models.Model):
     )
     duration = models.DurationField(default=timedelta(minutes=10), help_text="Expected time to complete this lesson")
     video_file = models.FileField(
-        upload_to='lesson_videos/',
+        upload_to='media/',
         blank=True,
         null=True,
         help_text="Upload video content for the lesson"
@@ -151,15 +166,15 @@ class Exercise(models.Model):
         on_delete=models.CASCADE, 
         related_name='lesson_exercise'
     )
+    file = models.FileField(
+        upload_to='exercise_files/',
+        help_text="Exercise file uploaded by user or group"
+    )
     exercise_type = models.CharField(
         max_length=20,
         choices=EXERCISE_TYPES,
         default='traditional',
         help_text="Type of exercise"
-    )
-    max_members = models.PositiveIntegerField(
-        default=1,
-        help_text="Maximum number of students allowed in a group (for group exercises)",
     )
     jupyterhub_url = models.URLField(
         blank=True, 
@@ -179,40 +194,43 @@ class Exercise(models.Model):
         return f"{self.lesson.title} ({self.get_exercise_type_display()})"
 
 class Group(models.Model):
-    exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE, related_name='groups')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='groups')
     members = models.ManyToManyField(
         CustomUserModel,
-        related_name='exercise_groups',
+        related_name='course_groups',
+        limit_choices_to={'is_student': True},
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         indexes = [
-            models.Index(fields=['exercise']),
+            models.Index(fields=['course']),
         ]
 
     def __str__(self):
-        return f"Group for {self.exercise.name}"
+        return f"Group for {self.course.title}"
 
     def clean(self):
-        if self.exercise.max_members and self.members.count() > self.exercise.max_members:
-            raise ValidationError(
-                f'Group cannot have more than {self.exercise.max_members} members'
-            )
-        
-        course = self.exercise.lesson.module.course
-        for member in self.members.all():
-            existing_group = Group.objects.filter(
-                exercise=self.exercise,
-                members=member
-            ).exclude(pk=self.pk).first()
+        # Skip member validation for new groups (not yet saved)
+        if not self.pk:
+            return
             
-            if existing_group:
+        if self.members.count() > self.course.max_members:
+            raise ValidationError(f"Group cannot have more than {self.course.max_members} members")
+        
+        # Check for existing memberships in ANY group for this course
+        for member in self.members.all():
+            other_groups = Group.objects.filter(
+                course=self.course,
+                members=member
+            ).exclude(pk=self.pk)
+            
+            if other_groups.exists():
                 raise ValidationError(
-                    f'User {member.get_full_name()} is already in another group for this exercise'
+                    f'Student {member.get_full_name()} is already in another group for this course'
                 )
             
-            if not course.enrollments.filter(student=member).exists():
+            if not self.course.enrollments.filter(student=member).exists():
                 raise ValidationError(
                     f'Student {member.get_full_name()} is not enrolled in the course'
                 )
@@ -262,3 +280,4 @@ class LessonProgress(models.Model):
 
     def __str__(self):
         return f"{self.student.get_full_name()} - {self.lesson.title} Progress"
+

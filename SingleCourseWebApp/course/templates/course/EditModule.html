@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Module</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <!-- Include Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <!-- Include Quill CSS -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <!-- Include custom styles -->
+    <style>
+        /* Sidebar Styling */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow-y: auto;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 25%;
+            border-right: 1px solid #dee2e6;
+            background: linear-gradient(180deg, #f8f9fa, #e9ecef);
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 16px;
+            padding-top: 20px;
+            justify-content: space-between;
+        }
+
+        /* Main Content Styling */
+        .main-content {
+            margin-left: 25%;
+            padding: 20px;
+            height: 100vh;
+            overflow-y: auto;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 16px;
+        }
+
+        /* Lesson Editor Styling */
+        .lesson-editor {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        /* Module Title Styling */
+        .module-title {
+            padding: 15px;
+            cursor: pointer;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .module-title:hover {
+            background-color: #dcdcdc;
+        }
+
+        /* Module Info Styling */
+        .module-info {
+            border-bottom: 1px solid #dee2e6;
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        /* List Group Item Styling */
+        .list-group-item {
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .list-group-item.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Lesson Form Styling */
+        .lesson-form .form-group {
+            margin-bottom: 15px;
+        }
+
+        .lesson-form .form-control {
+            width: 100%;
+            border-radius: 5px;
+        }
+
+        /* Button Styling */
+        .btn {
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        /* Home Button Styling */
+        .home-button {
+            margin: 20px;
+            text-align: center;
+            font-size: 1.6em;
+            color: #000000;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        /* Quill Editor Styling */
+        #quillEditor {
+            height: 300px;
+            font-size: 1.15rem;
+        }
+
+        #quillEditor h1 {
+            font-size: 36px;
+        }
+
+        #quillEditor h2 {
+            font-size: 32px;
+        }
+
+        #quillEditor h3 {
+            font-size: 28px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+        <div>
+            <!-- Module Title Section -->
+            <div class="module-title" onclick="toggleModuleInfo()">
+                <h5 id="moduleTitleDisplay">{{ module.title }}</h5>
+            </div>
+
+            <!-- Module Info Section -->
+            <div class="module-info" id="moduleInfo">
+                <input type="text" 
+                       class="form-control mb-2" 
+                       id="moduleTitle" 
+                       value="{{ module.title }}"
+                       data-module-id="{{ module.id }}">
+                <textarea class="form-control mb-3" 
+                          id="moduleDescription" 
+                          rows="3">{{ module.description }}</textarea>
+                <button class="btn btn-primary btn-sm" 
+                        onclick="saveModuleInfo()">Save</button>
+            </div>
+
+            <!-- Lessons List -->
+            <div class="lessons-list mt-3">
+                <div class="list-group">
+                    {% for lesson in module.lessons.all %}
+                    <a href="#" 
+                       class="list-group-item list-group-item-action {% if forloop.first %}active{% endif %}"
+                       data-lesson-id="{{ lesson.id }}"
+                       onclick="loadLesson({{ lesson.id }}, event)">
+                        {{ lesson.title }}
+                    </a>
+                    {% endfor %}
+                    <!-- Add New Lesson Button -->
+                    <div class="list-group-item d-flex justify-content-center align-items-center" onclick="addNewLesson()">
+                        <i class="fas fa-plus mr-2"></i> Add Lesson
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Home Button at the Bottom -->
+        <div class="home-button">
+            <a href="{% url 'course:manage_course' %}">
+                <i class="far fa-arrow-alt-circle-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <div id="lessonContent">
+            <!-- Lesson content will be loaded here dynamically -->
+        </div>
+    </div>
+
+    <!-- JavaScript Section -->
+    <!-- Include Quill JS -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script>
+        let quill; // Global Quill instance
+
+        /**
+         * Toggles the visibility of the module information section.
+         */
+        function toggleModuleInfo() {
+            const moduleInfo = document.getElementById('moduleInfo');
+            moduleInfo.style.display = (moduleInfo.style.display === 'none' || moduleInfo.style.display === '') ? 'block' : 'none';
+        }
+
+        /**
+         * Saves the module information by sending a POST request.
+         */
+        function saveModuleInfo() {
+            const moduleId = document.getElementById('moduleTitle').dataset.moduleId;
+            const title = document.getElementById('moduleTitle').value.trim();
+            const description = document.getElementById('moduleDescription').value.trim();
+
+            fetch(`/course/manage/edit_module/${moduleId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ title, description })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Module updated successfully');
+                    document.getElementById('moduleTitleDisplay').innerText = title;
+                    toggleModuleInfo();
+                } else {
+                    alert('Failed to update module. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while saving module information.');
+            });
+        }
+
+        /**
+         * Loads lesson content based on the provided lesson ID.
+         * @param {number} lessonId - The ID of the lesson to load.
+         * @param {Event} [event] - The triggering event (optional).
+         */
+        function loadLesson(lessonId, event = null) {
+            const lessonItems = document.querySelectorAll('.list-group-item');
+            lessonItems.forEach(item => item.classList.remove('active'));
+
+            if (event) {
+                event.currentTarget.classList.add('active');
+            } else {
+                const activeLesson = document.querySelector(`[data-lesson-id="${lessonId}"]`);
+                if (activeLesson) activeLesson.classList.add('active');
+            }
+
+            fetch(`/course/manage/lesson/${lessonId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    const lessonContent = document.getElementById('lessonContent');
+                    lessonContent.innerHTML = generateLessonForm(data, lessonId);
+                    
+                    initializeQuill();
+
+                    toggleContentInput();
+                })
+                .catch(error => {
+                    console.error('Error loading lesson:', error);
+                    alert('An error occurred while loading the lesson.');
+                });
+        }
+
+        /**
+         * Generates the HTML form for a lesson based on the data provided.
+         * @param {Object} data - The lesson data.
+         * @param {number} lessonId - The ID of the lesson.
+         * @returns {string} - The HTML string for the lesson form.
+         */
+        function generateLessonForm(data, lessonId) {
+            const videoSection = data.video_file ? 
+                `<div class="mb-2"><span>${data.video_file}</span></div>` : 
+                '<p>No video uploaded</p>';
+                
+            const content = (data.lesson_type === 'reading') ? (data.lesson_content || '') : '';
+            
+            return `
+                <form class="lesson-form">
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" class="form-control" value="${sanitizeHTML(data.title)}">
+                    </div>
+                    <div class="form-group">
+                        <label>Type</label>
+                        <select class="form-control" id="lessonType" onchange="toggleContentInput()">
+                            <option value="reading" ${data.lesson_type === 'reading' ? 'selected' : ''}>Reading</option>
+                            <option value="video" ${data.lesson_type === 'video' ? 'selected' : ''}>Video</option>
+                            <option value="exercise" ${data.lesson_type === 'exercise' ? 'selected' : ''}>Exercise</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="contentInput">
+                        <label>Content</label>
+                        <div id="quillEditor">${content}</div>
+                    </div>
+                    <div class="form-group" id="videoUpload" style="display: none;">
+                        <label>Current Video:</label>
+                        <div id="currentVideo">
+                            ${videoSection}
+                        </div>
+                        <div>
+                            <label>Upload New Video:</label>
+                            <input type="file" class="form-control-file" id="videoFile" accept="video/*">
+                            <small class="text-muted">Uploading a new video will replace the current one</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="saveLesson(${lessonId})">Save Changes</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDeleteLesson()">Delete</button>
+                </form>
+            `;
+        }
+
+        /**
+         * Adds a new lesson by sending a POST request.
+         */
+        function addNewLesson() {
+            const moduleId = document.getElementById('moduleTitle').dataset.moduleId;
+
+            fetch(`/course/manage/create_lesson/${moduleId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Refresh to display the new lesson
+                } else {
+                    alert('Failed to create a new lesson. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error creating lesson:', error);
+                alert('An error occurred while creating the lesson.');
+            });
+        }
+
+        /**
+         * Retrieves the value of a specified cookie.
+         * @param {string} name - The name of the cookie.
+         * @returns {string|null} - The cookie value or null if not found.
+         */
+        function getCookie(name) {
+            const cookieString = document.cookie;
+            const cookies = cookieString.split(';');
+            for (let cookie of cookies) {
+                const [key, value] = cookie.trim().split('=');
+                if (key === name) return decodeURIComponent(value);
+            }
+            return null;
+        }
+
+        /**
+         * Initializes the Quill editor.
+         */
+        function initializeQuill() {
+            quill = new Quill('#quillEditor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ header: [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline'],
+                        ['image', 'code-block']
+                    ]
+                }
+            });
+        }
+
+        /**
+         * Toggles the content input based on the selected lesson type.
+         */
+        function toggleContentInput() {
+            const lessonType = document.getElementById('lessonType').value;
+            const contentInput = document.getElementById('contentInput');
+            const videoUpload = document.getElementById('videoUpload');
+
+            if (lessonType === 'video') {
+                contentInput.style.display = 'none';
+                videoUpload.style.display = 'block';
+            } else {
+                contentInput.style.display = 'block';
+                videoUpload.style.display = 'none';
+            }
+        }
+
+        /**
+         * Confirms and deletes the currently active lesson.
+         */
+        function confirmDeleteLesson() {
+            if (confirm('Are you sure you want to delete this lesson?')) {
+                const activeLesson = document.querySelector('.list-group-item.active');
+                if (activeLesson) {
+                    const lessonId = activeLesson.dataset.lessonId;
+                    deleteLesson(lessonId);
+                } else {
+                    alert('No lesson selected for deletion.');
+                }
+            }
+        }
+
+        /**
+         * Deletes a lesson by sending a POST request.
+         * @param {number} lessonId - The ID of the lesson to delete.
+         */
+        function deleteLesson(lessonId) {
+            fetch(`/course/manage/delete_lesson/${lessonId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Refresh to update the lesson list
+                } else {
+                    alert('Failed to delete the lesson. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting lesson:', error);
+                alert('An error occurred while deleting the lesson.');
+            });
+        }
+
+        /**
+         * Saves changes to a lesson.
+         * @param {number} lessonId - The ID of the lesson to save.
+         */
+        function saveLesson(lessonId) {
+            const lessonForm = document.querySelector('.lesson-form');
+            const title = lessonForm.querySelector('input[type="text"]').value.trim();
+            const lessonType = lessonForm.querySelector('select').value;
+            let content = quill ? quill.root.innerHTML : '';
+
+            if (lessonType === 'video') {
+                handleVideoUpload(lessonId, title, lessonType);
+                return;
+            }
+
+            // Handle non-video content
+            const payload = {
+                title,
+                lesson_type: lessonType,
+                content
+            };
+
+            fetch(`/course/manage/save_lesson/${lessonId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Lesson updated successfully.');
+                    updateLessonTitleInList(lessonId, title);
+                } else {
+                    alert('Failed to update the lesson. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving lesson:', error);
+                alert('An error occurred while saving the lesson.');
+            });
+        }
+
+        /**
+         * Handles the video upload process for a lesson.
+         * @param {number} lessonId - The ID of the lesson.
+         * @param {string} title - The title of the lesson.
+         * @param {string} lessonType - The type of the lesson.
+         */
+        function handleVideoUpload(lessonId, title, lessonType) {
+            const videoFileInput = document.getElementById('videoFile');
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('lesson_type', lessonType);
+
+            if (videoFileInput.files.length > 0) {
+                formData.append('video_file', videoFileInput.files[0]);
+            }
+
+            fetch(`/course/manage/save_lesson/${lessonId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Lesson updated successfully.');
+                    updateLessonTitleInList(lessonId, title);
+                } else {
+                    alert('Failed to update the lesson. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving lesson:', error);
+                alert('An error occurred while saving the lesson.');
+            });
+        }
+
+        /**
+         * Updates the lesson title in the sidebar list.
+         * @param {number} lessonId - The ID of the lesson.
+         * @param {string} newTitle - The new title of the lesson.
+         */
+        function updateLessonTitleInList(lessonId, newTitle) {
+            const lessonItem = document.querySelector(`[data-lesson-id="${lessonId}"]`);
+            if (lessonItem) {
+                lessonItem.innerHTML = sanitizeHTML(newTitle);
+            }
+        }
+
+        /**
+         * Sanitizes HTML to prevent XSS attacks.
+         * @param {string} str - The string to sanitize.
+         * @returns {string} - The sanitized string.
+         */
+        function sanitizeHTML(str) {
+            const temp = document.createElement('div');
+            temp.textContent = str;
+            return temp.innerHTML;
+        }
+
+        // Load the first lesson by default upon page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const firstLesson = document.querySelector('.list-group-item');
+            if (firstLesson) {
+                const lessonId = firstLesson.dataset.lessonId;
+                loadLesson(lessonId);
+            }
+        });
+    </script>
+
+    <!-- Include Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<style>
+    .ql-container.ql-snow {
+        border: none;
+        font-size: 1.25rem;
+        overflow: hidden;
+        height: auto;
+    }
+    
+    .ql-editor {
+        overflow: visible !important;  /* Override Quill's default scrolling */
+        height: auto !important;       /* Allow content to expand */
+        padding: 0 !important;         /* Remove default padding */
+    }
+
+    .exercise-lab-btn {
+        text-decoration: none;
+        margin-top: 20px;
+        padding: 12px 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        display: inline-block;
+    }
+
+    .exercise-container {
+        margin-top: 1px;
+    }
+
+    .submission-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+        background: white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border-radius: 8px;
+    }
+
+    .submission-table th, 
+    .submission-table td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
+
+    .submission-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #444;
+    }
+
+    .submission-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .table-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .exercise-lab-btn-submit {
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    }
+
+
+    .collapsible-section {
+        border: 1px solid #eee;
+        border-radius: 8px;
+        margin: 20px 0;
+    }
+
+    .collapsible-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 15px;
+        background-color: #ffffff;
+        cursor: pointer;
+        border-radius: 8px;
+    }
+
+    .collapsible-header:hover {
+        background-color: #e9ecef;
+    }
+
+    .collapsible-content {
+        display: none;
+        padding: 15px;
+    }
+
+    .collapsible-arrow {
+        transition: transform 0.3s ease;
+    }
+
+    .collapsible-header.active .collapsible-arrow {
+        transform: rotate(180deg);
+    }
+
+    .submission-table {
+        margin: 0;  /* Override previous margin */
+    }
+</style>
+
+<h1>{{ title }}</h1>
+<div class="ql-container ql-snow">
+    <div class="ql-editor">
+        {{ lesson_content|safe }}
+    </div>
+</div>
+
+<div class="exercise-container">
+</div>
+
+<div class="collapsible-section">
+    <div class="collapsible-header">
+        <h3>Finish the exercise in lab</h3>
+        <span class="collapsible-arrow">▼</span>
+    </div>
+    <div class="collapsible-content">
+        <table class="submission-table">
+            <thead>
+                <tr>
+                    <th>Submission</th>
+                    <th>User</th>
+                    <th>Time</th>
+                    <th>Grade</th>
+                    <th>Feedback</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Assignment 1</td>
+                    <td>John Doe</td>
+                    <td>2024-01-01 10:00</td>
+                    <td>Not graded</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="table-actions">
+            <a href="#" class="exercise-lab-btn">Open Assignment</a>
+            <a href="#" class="exercise-lab-btn exercise-lab-btn-submit">Submit</a>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const headers = document.querySelectorAll('.collapsible-header');
+        
+        headers.forEach(header => {
+            header.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const content = this.nextElementSibling;
+                if (content.style.display === 'block') {
+                    content.style.display = 'none';
+                } else {
+                    content.style.display = 'block';
+                }
+            });
+        });
+    });
+
+    function openGroupManagementModal() {
+        document.getElementById('groupManagementModal').style.display = 'block';
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+        }
+    }
+
+    // Close modal with escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.style.display = 'none';
+            });
+        }
+    });
+</script> 

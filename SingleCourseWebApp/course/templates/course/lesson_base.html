@@ -1,0 +1,143 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'course/css/base.css' %}">
+<link rel="shortcut icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+
+
+<div class="lesson-detail-container">
+    {% if lesson_type == 'reading' %}
+    {% include 'course/lesson_types/reading.html' %}
+    {% elif lesson_type == 'video' %}
+    {% include 'course/lesson_types/video.html' %}
+    {% elif lesson_type == 'exercise' %}
+    {% include 'course/lesson_types/exercise.html' %}
+    {% endif %}
+
+    <div class="completion-button-container">
+        <button id="completeButton" class="complete-button" {% if progress.is_completed %}completed{% endif %}>
+            {% if progress.is_completed %}
+                Completed
+            {% else %}
+                Complete lesson
+            {% endif %}
+        </button>
+    </div>
+</div>
+{% include 'course/lesson_sidebar.html' with current_lesson_id=lesson_id %}
+
+<style>
+.lesson-detail-container {
+    margin: 0 550px 0 200px;
+    transition: margin 0.3s ease;
+    padding-top: 50px;
+}
+
+.lesson-detail-container.sidebar-collapsed {
+    margin: 0 200px;
+}
+
+.completion-button-container {
+    position: relative;
+    margin: 50px auto;
+    text-align: center;
+    width: fit-content;
+}
+
+.complete-button {
+    padding: 12px 24px;
+    border: 2px solid #373737;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 800;
+    transition: all 0.3s;
+}
+
+.complete-button:not([completed]) {
+    background-color: #373737;
+    color: white;
+}
+
+.complete-button:not([completed]):hover {
+    background-color: #626262;
+    color: white;
+}
+
+.complete-button[completed] {
+    background-color: white;
+    color: #373737;
+}
+
+.complete-button[completed]:hover {
+    background-color: #bdbdbd;
+}
+
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const lessonId = {{ lesson_id }};
+    const lessonContainer = document.querySelector('.lesson-detail-container');
+    const sidebar = document.getElementById('lessonSidebar');
+    
+    // Initial check
+    if (sidebar.classList.contains('collapsed')) {
+        lessonContainer.classList.add('sidebar-collapsed');
+    }
+    
+    // Watch for sidebar toggle
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.target.classList.contains('collapsed')) {
+                lessonContainer.classList.add('sidebar-collapsed');
+            } else {
+                lessonContainer.classList.remove('sidebar-collapsed');
+            }
+        });
+    });
+    
+    observer.observe(sidebar, { attributes: true });
+    
+    // Update the completion button handler
+    const completeButton = document.getElementById('completeButton');
+    completeButton.addEventListener('click', async function() {
+        try {
+            const response = await fetch(`/course/lesson/${lessonId}/complete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                completeButton.disabled = data.is_completed;
+                completeButton.textContent = data.is_completed ? 'Completed' : 'Complete lesson';
+                
+                // Only navigate if we're marking as complete and there's a next lesson
+                if ( data.next_lesson_id) {
+                    window.location.href = `/course/lesson/${data.next_lesson_id}/`;
+                }
+            }
+        } catch (error) {
+            console.error('Error toggling lesson completion:', error);
+        }
+    });
+
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>

@@ -1,0 +1,305 @@
+.course-details-container {
+
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 2rem;
+    min-height: 100vh;
+}
+
+.course-header {
+    position: relative;
+    background: linear-gradient(135deg, #8a8c8e, #558bdb);
+    padding: 4rem 2rem;
+    margin-bottom: 2rem;
+    max-width: 1600px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+    max-width: 1600px;
+    margin: 0;
+    padding-left: 1rem;
+}
+
+.header-content h1 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.provider-info {
+    margin-bottom: 2rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.provider-info span {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 1.1rem;
+}
+
+.begin-project-btn {
+    background-color: white;
+    color: #1a73e8;
+    padding: 0.8rem 2rem;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    margin-top: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.begin-project-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.begin-project-btn.enroll-btn {
+    background-color: #007bff !important;  /* Bootstrap blue color */
+    color: white !important;
+}
+
+.course-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #dadce0;
+    background-color: white;
+    padding: 0 1rem;
+    border-radius: 8px 8px 0 0;
+}
+
+.tab-button {
+    padding: 1rem 1.5rem;
+    border: none;
+    background: none;
+    color: #5f6368;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+}
+
+.tab-button.active {
+    color: #1a73e8;
+    border-bottom: 2px solid #1a73e8;
+}
+
+.group-popup {
+    display: none;
+    position: fixed;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    width: 300px;
+}
+
+.popup-content {
+    padding: 1.5rem;
+}
+
+.popup-content h3 {
+    margin: 0;
+    color: #202124;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.popup-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-top: 1.5rem;
+}
+
+.popup-btn {
+    padding: 0.8rem 1.2rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.popup-btn.create-group {
+    background-color: #1a73e8;
+    color: white;
+}
+
+.popup-btn.join-existing {
+    background-color: #f1f3f4;
+    color: #1a73e8;
+}
+
+.popup-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.join-group-btn {
+    background-color: white;
+    color: #1a73e8;
+    padding: 0.8rem 2rem;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.join-group-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.tab-content {
+    display: none;
+    padding: 20px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.group-info-container {
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.group-details {
+    margin-top: 15px;
+}
+
+.group-members-list {
+    list-style-type: none;
+    padding-left: 20px;
+}
+
+.group-members-list li {
+    margin: 5px 0;
+}
+
+.no-group-message {
+    text-align: center;
+    padding: 30px;
+}
+
+.no-group-message button {
+    margin-top: 15px;
+}
+
+.manage-course-btn {
+    background-color: white;
+    color: #1a73e8;
+    padding: 0.8rem 2rem;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    margin-top: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.manage-course-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.existing-groups {
+    margin-top: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.group-item {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.group-item h5 {
+    margin: 0 0 10px 0;
+}
+
+.group-item ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 5px 0;
+}
+
+.join-existing-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.join-existing-btn:hover {
+    background-color: #45a049;
+}
+
+.search-group {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+}
+
+#groupSearchInput {
+    padding: 5px;
+    margin-right: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.search-group-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.search-group-btn:hover {
+    background-color: #45a049;
+}
+
+.logout-form {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    z-index: 100;
+}
+
+.logout-btn {
+    background-color: white;
+    color: #1a73e8;
+    padding: 0.8rem 2rem;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.logout-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+

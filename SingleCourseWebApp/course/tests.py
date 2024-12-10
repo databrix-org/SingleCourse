@@ -45,6 +45,15 @@ class CourseModelTests(TestCase):
         self.assertEqual(self.course.difficulty_level, 1)
         self.assertFalse(self.course.is_published)
 
+    def test_single_course_constraint(self):
+        # Try to create a second course
+        with self.assertRaises(ValidationError):
+            Course.objects.create(
+                title='Second Course',
+                description='This should fail',
+                instructor=self.instructor
+            )
+
 class EnrollmentTests(TestCase):
     def setUp(self):
         self.student = CustomUserModel.objects.create_user(
@@ -75,6 +84,20 @@ class EnrollmentTests(TestCase):
             str(enrollment),
             f"{self.student.first_name} enrolled in {self.course.title}"
         )
+
+    def test_single_enrollment_constraint(self):
+        # Create first enrollment
+        Enrollment.objects.create(
+            student=self.student,
+            course=self.course
+        )
+        
+        # Try to create a second enrollment for the same student
+        with self.assertRaises(ValidationError):
+            Enrollment.objects.create(
+                student=self.student,
+                course=self.course
+            )
 
 class ExerciseAndGroupTests(TestCase):
     def setUp(self):

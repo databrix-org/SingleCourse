@@ -1,0 +1,17 @@
+<h1>{{ title }}</h1>
+<div class="video-container">
+    <video id="lessonVideo" controls preload="metadata" style="margin: 0 auto; width: 100%;">
+        <source src="{{ video_url }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const video = document.getElementById('lessonVideo');
+        
+        video.addEventListener('error', function(e) {
+            console.error('Error loading video:', e);
+        });
+    });
+</script>

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,9 +24,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'nc00o1hsog1j=az)u_unt1yvn5s#*ukuyueih9y9o%m#rmr6&r'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org']
+ALLOWED_HOSTS = ['1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org',
+                  '127.0.0.1',
+                  'localhost',
+                  '193.196.55.219']
 
 
 # Application definition
@@ -51,7 +55,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Shibboleth middleware
-    'shibboleth.middleware.ShibbolethRemoteUserMiddleware',
+    'course.shib_middleware.CustomShibbolethMiddleware',
 ]
 
 ROOT_URLCONF = 'app.urls'
@@ -119,11 +123,6 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
-
-STATIC_URL = 'static/'
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -133,26 +132,101 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Authentication backends
 AUTHENTICATION_BACKENDS = (
     'shibboleth.backends.ShibbolethRemoteUserBackend',
+    'django.contrib.auth.backends.ModelBackend',
 )
 
 # settings.py
 AUTH_USER_MODEL = 'course.CustomUserModel'
 
 SHIBBOLETH_ATTRIBUTE_MAP = {
-    "givenName": (True, "first_name"),
-    "sn": (True, "last_name"),
-    "mail": (True, "email"),
+    "HTTP_GIVENNAME": (True, "first_name"),
+    "HTTP_SN": (True, "last_name"),
+    "HTTP_MAIL": (True, "email"),
 }
 
 LOGIN_URL = 'https://1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org/Shibboleth.sso/Login'
 LOGOUT_URL = 'https://1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org/Shibboleth.sso/Logout'
-LOGIN_REDIRECT_URL = 'https://databrix.org'
+LOGOUT_REDIRECT_URL = 'https://databrix.org'
 #SHIBBOLETH_GROUP_ATTRIBUTES = ['Shibboleth-affiliation', 'Shibboleth-isMemberOf']
 
 # Security Settings
 SECURE_HSTS_SECONDS = 31536000  # 1 year
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  # Add this line
+USE_X_FORWARDED_HOST = True  # Add this line
+USE_X_FORWARDED_PORT = True  # Add this line
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': 'debug.log',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'course.shibboleth_views': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
+
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+# Media and Data Storage
+DATA_URL = '/data/'
+DATA_ROOT = os.path.join(BASE_DIR, 'data')
+USER_FILES_ROOT = os.path.join(DATA_ROOT, 'user_directories')
+EXERCISE_FILES_ROOT = os.path.join(DATA_ROOT, 'exercise_files')
+MEDIA_ROOT = os.path.join(DATA_ROOT, 'media')
+MEDIA_URL = DATA_URL + 'media/'
+EXERCISE_SUBMISSIONS_ROOT = os.path.join(DATA_ROOT, 'exercise_submissions')
+
+# Create necessary directories
+REQUIRED_DIRS = [
+    DATA_ROOT,
+    USER_FILES_ROOT,
+    EXERCISE_FILES_ROOT,
+    MEDIA_ROOT,
+    EXERCISE_SUBMISSIONS_ROOT,
+    STATIC_ROOT,
+]
+for directory in REQUIRED_DIRS:
+    os.makedirs(directory, exist_ok=True)
+
+# Storage Configuration
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+        'OPTIONS': {
+            'location': DATA_ROOT,
+            'base_url': DATA_URL,
+        }
+    },
+    'staticfiles': {
+        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+    },
+}

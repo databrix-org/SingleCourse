@@ -1,0 +1,55 @@
+INFO 2024-11-25 16:38:22,079 shibboleth_views 24620 26268 Authentication Debug Information:
+{'All Request Headers': {'HTTP_ACCEPT': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                         'HTTP_ACCEPT_ENCODING': 'gzip, deflate, br, zstd',
+                         'HTTP_ACCEPT_LANGUAGE': 'en,de;q=0.9,de-DE;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+                         'HTTP_CONNECTION': 'keep-alive',
+                         'HTTP_COOKIE': 'csrftoken=uUVon8sx98UZInIDJl4RmuXf8WFk0421',
+                         'HTTP_HOST': '127.0.0.1:8000',
+                         'HTTP_SEC_CH_UA': '"Microsoft Edge";v="131", '
+                                           '"Chromium";v="131", "Not_A '
+                                           'Brand";v="24"',
+                         'HTTP_SEC_CH_UA_MOBILE': '?0',
+                         'HTTP_SEC_CH_UA_PLATFORM': '"Windows"',
+                         'HTTP_SEC_FETCH_DEST': 'document',
+                         'HTTP_SEC_FETCH_MODE': 'navigate',
+                         'HTTP_SEC_FETCH_SITE': 'none',
+                         'HTTP_SEC_FETCH_USER': '?1',
+                         'HTTP_UPGRADE_INSECURE_REQUESTS': '1',
+                         'HTTP_USER_AGENT': 'Mozilla/5.0 (Windows NT 10.0; '
+                                            'Win64; x64) AppleWebKit/537.36 '
+                                            '(KHTML, like Gecko) '
+                                            'Chrome/131.0.0.0 Safari/537.36 '
+                                            'Edg/131.0.0.0'},
+ 'Request Details': {'is_ajax': False,
+                     'is_secure': False,
+                     'method': 'GET',
+                     'path': '/auth/debug/'},
+ 'Session Info': {'session_data': {}, 'session_key': None},
+ 'Shibboleth Headers': {},
+ 'Shibboleth Settings': {'LOGIN_URL': 'https://1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org/Shibboleth.sso/Login',
+                         'LOGOUT_URL': 'https://1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org/Shibboleth.sso/Logout',
+                         'SHIBBOLETH_ATTRIBUTE_MAP': {'givenName': (True,
+                                                                    'first_name'),
+                                                      'mail': (True, 'email'),
+                                                      'sn': (True,
+                                                             'last_name')}},
+ 'User Authentication': {'email': None,
+                         'is_authenticated': False,
+                         'user_id': None,
+                         'username': None}}
+INFO 2024-11-25 16:38:49,287 shibboleth_views 24620 26268 Starting login process...
+INFO 2024-11-25 16:38:49,287 shibboleth_views 24620 26268 Current user state: authenticated=False, user=
+INFO 2024-11-25 16:38:49,287 shibboleth_views 24620 26268 Login endpoint: https://1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org/Shibboleth.sso/Login
+INFO 2024-11-25 16:38:49,288 shibboleth_views 24620 26268 Redirecting to: https://1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org/Shibboleth.sso/Login?target=http%3A//127.0.0.1%3A8000/auth/debug/
+INFO 2024-11-28 09:02:48,906 shibboleth_views 11212 18556 Starting login process...
+INFO 2024-11-28 09:02:48,911 shibboleth_views 11212 18556 Current user state: authenticated=True, user=gu
+INFO 2024-11-28 09:02:48,911 shibboleth_views 11212 18556 Login endpoint: https://1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org/Shibboleth.sso/Login
+INFO 2024-11-28 09:02:48,911 shibboleth_views 11212 18556 Redirecting to: https://1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org/Shibboleth.sso/Login?target=http%3A//127.0.0.1%3A8000/auth/debug/
+INFO 2024-12-10 10:44:04,697 shibboleth_views 20264 12236 Starting logout process...
+INFO 2024-12-10 10:44:04,699 shibboleth_views 20264 12236 Pre-logout user state: authenticated=True, user=admin
+INFO 2024-12-10 10:44:04,712 shibboleth_views 20264 12236 Post-logout user state: authenticated=False
+INFO 2024-12-10 10:44:04,712 shibboleth_views 20264 12236 Logout target URL: https://databrix.org
+INFO 2024-12-10 10:46:13,871 shibboleth_views 20264 12236 Starting logout process...
+INFO 2024-12-10 10:46:13,874 shibboleth_views 20264 12236 Pre-logout user state: authenticated=True, user=admin
+INFO 2024-12-10 10:46:13,878 shibboleth_views 20264 12236 Post-logout user state: authenticated=False
+INFO 2024-12-10 10:46:13,878 shibboleth_views 20264 12236 Logout target URL: https://databrix.org
