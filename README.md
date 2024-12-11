@@ -6,9 +6,8 @@ SingleCourse is a web application for only one Course designed to provide a seam
 
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
-  - [1. Clone the Repository](#1-clone-the-repository)
-  - [2. Set Up Ubuntu VM](#2-set-up-ubuntu-vm)
-  - [3. Create Persistent Volumes](#3-create-persistent-volumes)
+  - [1. Set Up Ubuntu VM](#1-set-up-ubuntu-vm)
+  - [2. Create Persistent Volumes](#2-create-persistent-volumes)
 - [Deploying with Docker](#deploying-with-docker)
   - [1. Install Docker and Docker Compose](#1-install-docker-and-docker-compose)
   - [2. Configure Docker Compose](#2-configure-docker-compose)
