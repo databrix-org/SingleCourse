@@ -110,13 +110,13 @@ Add the following configuration:
 ```apache Copy
 #Listen 80
 <VirtualHost *:80>
-  ServerName 1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org
-  Redirect / https://1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org/
+  ServerName example.org
+  Redirect / https://example.org/
 </VirtualHost>
 
 #Listen 443
 <VirtualHost *:443>
-  ServerName 1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org
+  ServerName example.org
 
   SSLProxyEngine on
   ServerSignature Off
@@ -126,11 +126,11 @@ Add the following configuration:
 
   # HTTP Strict Transport Security (mod_headers is required) (63072000 seconds)
   Header always set Strict-Transport-Security "max-age=63072000"
-  Header set Content-Security-Policy "frame-ancestors 'self' https://1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org;"
+  Header set Content-Security-Policy "frame-ancestors 'self' https://example.org;"
   # Configure SSL
   SSLEngine on
-  SSLCertificateFile /etc/letsencrypt/live/1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org/fullchain.pem
-  SSLCertificateKeyFile /etc/letsencrypt/live/1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org/privkey.pem
+  SSLCertificateFile /etc/letsencrypt/live/example.org/fullchain.pem
+  SSLCertificateKeyFile /etc/letsencrypt/live/example.org/privkey.pem
   #Include /etc/letsencrypt/options-ssl-apache.conf
   SSLOpenSSLConfCmd DHParameters /etc/ssl/certs/dhparams.pem
   # Intermediate configuration from SSL-config.mozilla.org (2022-03-03)
@@ -144,7 +144,7 @@ Add the following configuration:
 #----------------------Shibboleth-------------------------------
   UseCanonicalName          On
   Include     /etc/shibboleth-ds/shibboleth-ds.conf
-  Redirect       seeother /shibboleth https://1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org/Shibboleth.sso/Metadata
+  Redirect       seeother /shibboleth https://example.org/Shibboleth.sso/Metadata
   RedirectMatch /start-session$ /Shibboleth.sso/Login
 
   <Location /Shibboleth.sso>
@@ -183,8 +183,8 @@ Add the following configuration:
     # Ensure trailing slash
     # RewriteRule ^/$ /jupyter/ [R]
 
-    ProxyPass http://193.196.55.219:8008/auth
-    ProxyPassReverse http://193.196.55.219:8008/auth
+    ProxyPass http://xxx.xxx.xxx:8008/auth
+    ProxyPassReverse http://xxx.xxx.xxx:8008/auth
   </Location>
 
   <Location /course>
@@ -197,8 +197,8 @@ Add the following configuration:
     # Ensure trailing slash
     # RewriteRule ^/$ /jupyter/ [R]
 
-    ProxyPass http://193.196.55.219:8008/course
-    ProxyPassReverse http://193.196.55.219:8008/course
+    ProxyPass http://xxx.xxx.xxx:8008/course
+    ProxyPassReverse http://xxx.xxx.xxx:8008/course
   </Location>
 
   <Location />
@@ -219,14 +219,14 @@ Add the following configuration:
     ProxyPreserveHost On
 
 
-    ProxyPass http://193.196.55.219:8008/admin
-    ProxyPassReverse http://193.196.55.219:8008/admin
+    ProxyPass http://xxx.xxx.xxx:8008/admin
+    ProxyPassReverse http://xxx.xxx.xxx:8008/admin
   </Location>
 
 </VirtualHost>
 
 ```
-Note: Replace yourdomain.com, /etc/ssl/certs/your_cert.pem, and /etc/ssl/private/your_key.pem with your actual domain and SSL certificate paths.
+Note: Replace xxx.xxx.xxx and example.org, with your actual domain and  paths.
 
 ### 4. Enable the Virtual Host
 Enable the new site and disable the default site:
