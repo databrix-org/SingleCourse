@@ -163,7 +163,12 @@ sudo systemctl reload apache2
 Install Shibboleth Service Provider on your Ubuntu VM:
 ```bash Copy
 sudo apt update
-sudo apt install -y libapache2-mod-shib2 shibboleth-sp2-common
+apt install libapache2-mod-shib ntp
+ 
+wget --no-check-certificate https://shibboleth.net/downloads/embedded-discovery-service/latest/shibboleth-embedded-ds-1.3.0.tar.gz && \
+tar -xzf shibboleth-embedded-ds-1.3.0.tar.gz && \
+cd shibboleth-embedded-ds-1.3.0 && \
+make install
 ```
 ### 2. Configure Shibboleth
 Edit the Shibboleth configuration file:
