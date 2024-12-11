@@ -36,17 +36,10 @@ Before you begin, ensure you have the following:
 
 ## Installation
 
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/databrix-org/SingleCourse.git
-cd SingleCourse
-```
-
-### 2. Set Up Ubuntu VM
+### 1. Set Up Ubuntu VM
 Ensure your Ubuntu VM is up and running. You can use platforms like AWS, Azure, or local virtualization tools such as VirtualBox.
 
-### 3. Create Persistent Volumes
+### 2. Create Persistent Volumes
 Create directories on your VM to store static and data files persistently.
 
 ```bash Copy
@@ -67,7 +60,8 @@ version: '3.8'
 
 services:
   web:
-    build: ./SingleCourseWebApp
+    image: guyq1997/singlecourse:latest
+    command: /app/docker-entrypoint.sh
     ports:
       - "8000:8000"
     volumes:
