@@ -157,6 +157,8 @@ Add the following configuration:
   </Location>
 
   Alias /shibboleth-sp/main.css /usr/share/shibboleth/main.css
+
+#----------------------static files-----------------------------
   # Alias for Static Files
   Alias /static/ /opt/SingleCourse/static_volume/
   <Directory /opt/SingleCourse/static_volume>
@@ -168,8 +170,8 @@ Add the following configuration:
   <Directory /opt/SingleCourse/SingleCourseWebApp/data_volume>
       Require all granted
   </Directory>
-#----------------------Jupyterhub-------------------------------
-  # JupyterHub proxy configuration
+#----------------------APP-------------------------------
+  # APP proxy configuration
   <Location /auth>
     #AuthType shibboleth
     #ShibRequestSetting requireSession 1
@@ -221,7 +223,6 @@ Add the following configuration:
   </Location>
 
 </VirtualHost>
-#----------------------static files-----------------------------
 
 ```
 Note: Replace yourdomain.com, /etc/ssl/certs/your_cert.pem, and /etc/ssl/private/your_key.pem with your actual domain and SSL certificate paths.
