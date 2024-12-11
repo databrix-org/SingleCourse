@@ -56,33 +56,8 @@ mkdir -p /var/singlecourse/data
 
 ## Deploying with Docker
 ### 1. Install Docker and Docker Compose
-If Docker is not already installed on your Ubuntu VM, install it using the following commands:
-
-```bash Copy
-# Update the package list
-sudo apt update
-
-# Install prerequisite packages
-sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
-
-# Add Docker’s official GPG key
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-
-# Add Docker repository
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-
-# Install Docker
-sudo apt update
-sudo apt install -y docker-ce
-
-# Install Docker Compose
-sudo curl -L "https://github.com/docker/compose/releases/download/2.12.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-
-# Verify installation
-docker --version
-docker-compose --version
-```
+If Docker is not already installed on your Ubuntu VM, follow the instruction to install:
+[Official Instruction](https://docs.docker.com/engine/install/ubuntu/)
 
 ### 2. Configure Docker Compose
 Ensure the docker-compose.yml file is properly configured to use the persistent volumes.
