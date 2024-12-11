@@ -62,9 +62,7 @@ If Docker is not already installed on your Ubuntu VM, follow the instruction to 
 ### 2. Configure Docker Compose
 Ensure the docker-compose.yml file is properly configured to use the persistent volumes.
 
-```bash yaml
-
-Copy
+```yaml Copy
 version: '3.8'
 
 services:
