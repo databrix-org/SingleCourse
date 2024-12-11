@@ -44,6 +44,7 @@ Create directories on your VM to store static and data files persistently.
 ```bash Copy
 mkdir -p /var/singlecourse/static
 mkdir -p /var/singlecourse/data
+chmod -R 777 /var/singlecourse/data
 ```
 
 ## Deploying with Docker
