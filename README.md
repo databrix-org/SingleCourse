@@ -107,43 +107,122 @@ sudo nano /etc/apache2/sites-available/singlecourse.conf
 ```
 Add the following configuration:
 ```apache Copy
+#Listen 80
 <VirtualHost *:80>
-    ServerName yourdomain.com
-
-    # Redirect all HTTP requests to HTTPS
-    Redirect permanent / https://yourdomain.com/
-
+  ServerName 1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org
+  Redirect / https://1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org/
 </VirtualHost>
 
+#Listen 443
 <VirtualHost *:443>
-    ServerName yourdomain.com
+  ServerName 1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org
 
-    # SSL Configuration
-    SSLEngine on
-    SSLCertificateFile /etc/ssl/certs/your_cert.pem
-    SSLCertificateKeyFile /etc/ssl/private/your_key.pem
+  SSLProxyEngine on
+  ServerSignature Off
 
-    # Proxy settings
+  # Enable HTTP/2, if available
+  Protocols h2 http/1.1
+
+  # HTTP Strict Transport Security (mod_headers is required) (63072000 seconds)
+  Header always set Strict-Transport-Security "max-age=63072000"
+  Header set Content-Security-Policy "frame-ancestors 'self' https://1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org;"
+  # Configure SSL
+  SSLEngine on
+  SSLCertificateFile /etc/letsencrypt/live/1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org/fullchain.pem
+  SSLCertificateKeyFile /etc/letsencrypt/live/1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org/privkey.pem
+  #Include /etc/letsencrypt/options-ssl-apache.conf
+  SSLOpenSSLConfCmd DHParameters /etc/ssl/certs/dhparams.pem
+  # Intermediate configuration from SSL-config.mozilla.org (2022-03-03)
+  SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1
+  SSLCipherSuite ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
+  SSLHonorCipherOrder off
+  SSLSessionTickets off
+
+  # Jupyter-collaboration URL contains %, Apache must % understand
+  AllowEncodedSlashes             On
+#----------------------Shibboleth-------------------------------
+  UseCanonicalName          On
+  Include     /etc/shibboleth-ds/shibboleth-ds.conf
+  Redirect       seeother /shibboleth https://1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org/Shibboleth.sso/Metadata
+  RedirectMatch /start-session$ /Shibboleth.sso/Login
+
+  <Location /Shibboleth.sso>
+    AuthType None
+    Require all granted
+  </Location>
+
+  <Location /shibboleth-sp>
+    AuthType None
+    Require all granted
+  </Location>
+
+  Alias /shibboleth-sp/main.css /usr/share/shibboleth/main.css
+  # Alias for Static Files
+  Alias /static/ /opt/SingleCourse/static_volume/
+  <Directory /opt/SingleCourse/static_volume>
+      Require all granted
+  </Directory>
+
+  # Alias for Media Files
+  Alias /data/ /opt/SingleCourse/data_volume/
+  <Directory /opt/SingleCourse/SingleCourseWebApp/data_volume>
+      Require all granted
+  </Directory>
+#----------------------Jupyterhub-------------------------------
+  # JupyterHub proxy configuration
+  <Location /auth>
+    #AuthType shibboleth
+    #ShibRequestSetting requireSession 1
+    #require valid-user
+    RewriteEngine On
     ProxyPreserveHost On
-    ProxyPass / http://localhost:8000/
-    ProxyPassReverse / http://localhost:8000/
+    ShibUseHeaders On
+    # Ensure trailing slash
+    # RewriteRule ^/$ /jupyter/ [R]
 
-    # Serve static files
-    Alias /static /var/singlecourse/static
-    <Directory /var/singlecourse/static>
-        Require all granted
-    </Directory>
+    ProxyPass http://193.196.55.219:8008/auth
+    ProxyPassReverse http://193.196.55.219:8008/auth
+  </Location>
 
-    # Shibboleth Authentication
-    <Location />
-        AuthType shibboleth
-        ShibRequestSetting requireSession 1
-        Require valid-user
-    </Location>
+  <Location /course>
+    #AuthType shibboleth
+    #ShibRequestSetting requireSession 1
+    ShibUseHeaders On
+    RewriteEngine On
+    ProxyPreserveHost On
 
-    ErrorLog ${APACHE_LOG_DIR}/singlecourse_error.log
-    CustomLog ${APACHE_LOG_DIR}/singlecourse_access.log combined
+    # Ensure trailing slash
+    # RewriteRule ^/$ /jupyter/ [R]
+
+    ProxyPass http://193.196.55.219:8008/course
+    ProxyPassReverse http://193.196.55.219:8008/course
+  </Location>
+
+  <Location />
+    AuthType shibboleth
+    ShibRequestSetting requireSession 1
+    require valid-user
+    RequestHeader set HTTP_MAIL %{mail}e env=mail
+    RequestHeader set HTTP_GIVENNAME %{givenName}e env=givenName
+    RequestHeader set HTTP_SN %{sn}e env=sn
+    RequestHeader set HTTP_UID %{uid}e env=uid
+  </Location>
+
+  <Location /admin>
+
+    ShibRequestSetting requireSession off
+    ShibUseHeaders On
+    RewriteEngine On
+    ProxyPreserveHost On
+
+
+    ProxyPass http://193.196.55.219:8008/admin
+    ProxyPassReverse http://193.196.55.219:8008/admin
+  </Location>
+
 </VirtualHost>
+#----------------------static files-----------------------------
+
 ```
 Note: Replace yourdomain.com, /etc/ssl/certs/your_cert.pem, and /etc/ssl/private/your_key.pem with your actual domain and SSL certificate paths.
 
