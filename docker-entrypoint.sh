@@ -7,10 +7,10 @@ set -e
 echo "Applying database migrations..."
 python /app/manage.py migrate
 
-# Collect static files (if not done in Dockerfile)
-# echo "Collecting static files..."
-# python /app/manage.py collectstatic --noinput
+# Collect static files
+echo "Collecting static files..."
+python /app/manage.py collectstatic --noinput
 
-# Start Apache in the foreground
-echo "Starting Apache..."
-exec apache2ctl -D FOREGROUND 
+# Start Gunicorn
+echo "Starting Gunicorn..."
+gunicorn --bind 0.0.0.0:8008 app.wsgi:application

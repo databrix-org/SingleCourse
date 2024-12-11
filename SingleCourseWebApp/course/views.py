@@ -470,7 +470,9 @@ def create_lesson(request, module_id):
     
     return JsonResponse({
         'success': True,
-        'lesson_id': lesson.id
+        'lesson_id': lesson.id,
+        'lesson_title': lesson.title,
+        'lesson_type': lesson.lesson_type
     })
 
 @login_required
@@ -485,7 +487,7 @@ def delete_lesson(request, lesson_id):
     return JsonResponse({'success': True})
 
 @login_required
-@require_POST
+@require_http_methods(['POST'])
 def save_lesson(request, lesson_id):
     """
     Endpoint to save changes to a lesson.
@@ -497,14 +499,26 @@ def save_lesson(request, lesson_id):
     lesson = get_object_or_404(Lesson, id=lesson_id)
 
     try:
-        # Check if the request contains a file
-        if 'video_file' in request.FILES:
-            video_file = request.FILES['video_file']
-            lesson.video_file.save(video_file.name, video_file, save=True)
-            lesson.lesson_content = ''
-            lesson.lesson_exercise = None
+        # Check if the request is multipart (contains files)
+        if request.content_type and 'multipart/form-data' in request.content_type:
+            title = request.POST.get('title')
+            lesson_type = request.POST.get('lesson_type')
+            
+            if 'video_file' in request.FILES:
+                # Delete old video file if it exists
+                if lesson.video_file:
+                    lesson.video_file.delete(save=False)
+                # Save new video file
+                lesson.video_file = request.FILES['video_file']
+            
+            lesson.title = title
+            lesson.lesson_type = lesson_type
+            lesson.lesson_content = ''  # Clear content for video lessons
+            lesson.save()
+            
+            return JsonResponse({'success': True})
         else:
-            # Parse JSON data from the request body
+            # Handle JSON data
             data = json.loads(request.body)
             title = data.get('title')
             lesson_type = data.get('lesson_type')
@@ -513,28 +527,18 @@ def save_lesson(request, lesson_id):
             if not title or not lesson_type:
                 return JsonResponse({'success': False, 'error': 'Title and lesson type are required.'}, status=400)
 
-            valid_lesson_types = ['reading', 'video', 'exercise']
-            if lesson_type not in valid_lesson_types:
-                return JsonResponse({'success': False, 'error': 'Invalid lesson type.'}, status=400)
-
             lesson.title = title
             lesson.lesson_type = lesson_type
-
-            if lesson_type == 'reading':
-                lesson.lesson_content = content
-                lesson.video_file = None
-                lesson.lesson_exercise = None
-            elif lesson_type == 'exercise':
-                # Assuming 'content' is the exercise ID or related data
-                exercise = get_object_or_404(Exercise, id=content)
-                lesson.lesson_exercise = exercise
-                lesson.lesson_content = ''
+            lesson.lesson_content = content if lesson_type == 'reading' else ''
+            
+            # Clear video file if switching to non-video type
+            if lesson_type != 'video' and lesson.video_file:
+                lesson.video_file.delete(save=False)
                 lesson.video_file = None
 
-        lesson.save()
-        return JsonResponse({'success': True})
-    except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'error': 'Invalid JSON data.'}, status=400)
+            lesson.save()
+            return JsonResponse({'success': True})
+
     except Exception as e:
         # Log the error for debugging
         print(f"Error saving lesson: {e}")

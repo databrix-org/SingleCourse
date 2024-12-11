@@ -33,11 +33,16 @@ RUN ls -la /app && \
 COPY docker-entrypoint.sh /app
 RUN chmod +x /app/docker-entrypoint.sh
 
+
 # Create a non-root user
 RUN useradd -m appuser && \
     chown -R appuser:appuser /app
 USER appuser
 
+# Create necessary directories and set permissions
+RUN mkdir -p /app/data/user_directories && \
+    chown -R appuser:appuser /app/data
+    
 # Expose port
 EXPOSE 8008
 
