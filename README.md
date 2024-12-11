@@ -1,6 +1,6 @@
 # SingleCourse
 
-SingleCourse is a web application designed to provide a seamless experience for managing and accessing course materials. This README provides comprehensive instructions on how to deploy the application using Docker, set up Apache as a reverse proxy with Shibboleth for authentication, and configure the necessary environment on an Ubuntu VM.
+SingleCourse is a web application for only one Course designed to provide a seamless experience for embeding a course in an existing LMS. It also provides functionalities to manage and access course materials efficiently. This README provides comprehensive instructions on how to deploy the application using Docker, set up Apache as a reverse proxy with Shibboleth for authentication, and configure the necessary environment on an Ubuntu VM.
 
 ## Table of Contents
 
