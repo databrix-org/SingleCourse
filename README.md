@@ -54,8 +54,8 @@ mkdir -p /var/singlecourse/static
 mkdir -p /var/singlecourse/data
 ```
 
-Deploying with Docker
-1. Install Docker and Docker Compose
+## Deploying with Docker
+### 1. Install Docker and Docker Compose
 If Docker is not already installed on your Ubuntu VM, install it using the following commands:
 
 ```bash Copy
@@ -84,7 +84,7 @@ docker --version
 docker-compose --version
 ```
 
-2. Configure Docker Compose
+### 2. Configure Docker Compose
 Ensure the docker-compose.yml file is properly configured to use the persistent volumes.
 
 ```bash yaml
@@ -103,7 +103,7 @@ services:
     restart: always
 ```
 
-3. Start the Application
+### 3. Start the Application
 Run the following command to build and start the Docker containers:
 
 ```bash Copy
@@ -112,8 +112,8 @@ sudo docker-compose up -d
 sudo docker-compose ps
 ```
 
-Configuring Apache as a Reverse Proxy
-1. Install Apache
+## Configuring Apache as a Reverse Proxy
+### 1. Install Apache
 Install Apache on your Ubuntu VM:
 
 ```bash Copy
@@ -121,7 +121,7 @@ sudo apt update
 sudo apt install -y apache2
 ```
 
-2. Enable Required Modules
+### 2. Enable Required Modules
 Enable the necessary Apache modules for proxying and serving static files:
 
 ```bash Copy
@@ -134,7 +134,7 @@ sudo a2enmod proxy_balancer
 sudo a2enmod lbmethod_byrequests
 ```
 
-3. Configure Virtual Host
+### 3. Configure Virtual Host
 Create a new Apache virtual host configuration file:
 ```bash Copy
 sudo nano /etc/apache2/sites-available/singlecourse.conf
@@ -181,7 +181,7 @@ Add the following configuration:
 ```
 Note: Replace yourdomain.com, /etc/ssl/certs/your_cert.pem, and /etc/ssl/private/your_key.pem with your actual domain and SSL certificate paths.
 
-4. Enable the Virtual Host
+### 4. Enable the Virtual Host
 Enable the new site and disable the default site:
 
 ```bash Copy
@@ -192,21 +192,21 @@ Reload Apache to apply the changes:
 ```bash Copy
 sudo systemctl reload apache2
 ```
-Setting Up Shibboleth for Authentication
-1. Install Shibboleth
+## Setting Up Shibboleth for Authentication
+### 1. Install Shibboleth
 Install Shibboleth Service Provider on your Ubuntu VM:
 ```bash Copy
 sudo apt update
 sudo apt install -y libapache2-mod-shib2 shibboleth-sp2-common
 ```
-2. Configure Shibboleth
+### 2. Configure Shibboleth
 Edit the Shibboleth configuration file:
 ```bash Copy
 sudo nano /etc/shibboleth/shibboleth2.xml
 ```
 Ensure the configuration aligns with your Identity Provider (IdP) settings. You may need to obtain metadata from your IdP and update the <SSO> and <MetadataProvider> sections accordingly.
 
-3. Integrate Shibboleth with Apache
+### 3. Integrate Shibboleth with Apache
 After configuring Shibboleth, restart the services:
 ```bash Copy
 sudo systemctl restart apache2
@@ -214,13 +214,13 @@ sudo systemctl restart shibd
 ```
 Ensure that Shibboleth is correctly integrated by accessing your application URL in the browser. You should be prompted to authenticate via your configured IdP.
 
-Final Steps
+## Final Steps
 Ensure Firewall Rules: Make sure that ports 80 and 443 are open.
 ```bash Copy
 sudo ufw allow 'Apache Full'
 ```
 Verify Deployment: Navigate to https://yourdomain.com in your web browser. You should see the SingleCourse application, authenticated via Shibboleth, with static files served correctly.
-Troubleshooting
+## Troubleshooting
 Docker Issues: Check Docker container logs if the application is not running as expected.
 ```bash Copy
 sudo docker-compose logs
@@ -233,7 +233,7 @@ Shibboleth Authentication Problems: Ensure that Shibboleth is correctly configur
 ```bash Copy
 sudo tail -f /var/log/shibboleth/shibd.log
 ```
-License
+## License
 This project is licensed under the MIT License.
 
 
